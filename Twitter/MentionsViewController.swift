@@ -1,16 +1,14 @@
 //
-//  TweetsViewController.swift
+//  MentionsViewController.swift
 //  Twitter
 //
-//  Created by Rohit Jhangiani on 5/21/15.
+//  Created by Rohit Jhangiani on 5/30/15.
 //  Copyright (c) 2015 5TECH. All rights reserved.
 //
 
 import UIKit
 
-let tweetsUpdatedNotification = "tweetsUpdatedNotification"
-
-class TweetsViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, TweetCellDelegate, TweetComposeViewControllerDelegate {
+class MentionsViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, TweetCellDelegate {
 
     // outlets
     @IBOutlet weak var tableView: UITableView!
@@ -23,10 +21,10 @@ class TweetsViewController: UIViewController, UITableViewDataSource, UITableView
     var tweets: [Tweet]?
     var replyToTweetId: String?
     var replyFromUser: String?
-    var selectedRow: Int?
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
         self.tableView.dataSource = self
         self.tableView.delegate = self
         self.tableView.estimatedRowHeight = 140
@@ -44,9 +42,8 @@ class TweetsViewController: UIViewController, UITableViewDataSource, UITableView
         tableFooterView.addSubview(footerActivityIndicator)
         self.tableView.tableFooterView = tableFooterView
         
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: "loadTweets:", name: tweetsUpdatedNotification, object: nil)
+        loadMentions(false)
         
-        loadTweets(false)
     }
 
     override func didReceiveMemoryWarning() {
@@ -63,37 +60,33 @@ class TweetsViewController: UIViewController, UITableViewDataSource, UITableView
             return 0
         }
     }
-
+    
     func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
         let cell = tweets![indexPath.row].populateCell(tableView, atRow: indexPath.row)
         cell.delegate = self
-        var tapGestureRecognizer: UITapGestureRecognizer = UITapGestureRecognizer(target: self, action: "onTap:")
-        tapGestureRecognizer.numberOfTapsRequired = 1
-        tapGestureRecognizer.numberOfTouchesRequired = 1
-        cell.profileImageView.addGestureRecognizer(tapGestureRecognizer)
         
-//        if indexPath.row == self.tweets!.count - 1 {
-//            loadTweets(true)
-//        }
+        if indexPath.row == self.tweets!.count - 1 {
+            loadMentions(true)
+        }
         
         return cell
     }
     
     func tableView(tableView: UITableView, didDeselectRowAtIndexPath indexPath: NSIndexPath) {
-        selectedRow = indexPath.row
+        // selectedRow = indexPath.row
         tableView.deselectRowAtIndexPath(indexPath, animated: true)
     }
     
     // MARK: - Misc. helpers
     
-    func loadTweets(isSubsequentReload: Bool) {
+    func loadMentions(isSubsequentReload: Bool) {
         activityIndicatorView.startAnimating()
         var params: NSDictionary?
         if isSubsequentReload {
             params = ["max_id": self.tweets![self.tweets!.count-1].id!]
         }
         
-        TwitterClient.sharedInstance.homeTimelineWithParams(params, completion: { (tweets, error) -> () in
+        TwitterClient.sharedInstance.mentionsTimelineWithParams(params, completion: { (tweets, error) -> () in
             if let tweets = tweets {
                 if isSubsequentReload {
                     for index in 0 ..< tweets.count {
@@ -113,31 +106,15 @@ class TweetsViewController: UIViewController, UITableViewDataSource, UITableView
         if (self.refreshControl.refreshing == true) {
             self.refreshControl.endRefreshing()
         }
-
+        
     }
     
     // MARK: - Refresh Control
     
     func onRefresh() {
-        self.loadTweets(false)
+        self.loadMentions(false)
     }
-    
-    // MARK: - IBActions
-    
-    @IBAction func onSignout(sender: AnyObject) {
-        User.currentUser?.signout()
-    }
-    
-    @IBAction func onTap(sender: AnyObject) {
-        var selectedImageView = sender.view as! UIImageView
-        selectedRow = selectedImageView.tag
-        println("selected row: \(selectedRow!)")
-        self.performSegueWithIdentifier("profileSegue", sender: self)
-    }
-    
-    
-    // MARK: - TweetCellDelegate
-    
+
     func tweetCell(tweetCell: TweetCell, didTapReplyTweetId tweetId: String, fromUser: String) {
         let indexPath = tableView.indexPathForCell(tweetCell)
         self.replyToTweetId = self.tweets![indexPath!.row].id
@@ -155,29 +132,14 @@ class TweetsViewController: UIViewController, UITableViewDataSource, UITableView
         self.tweets![indexPath!.row].isFavorited = status
     }
     
-    func tweetComposeViewController(tweetComposeViewController: TweetComposeViewController, didComposeTweet tweet: Tweet) {
-        self.tweets = [tweet] + self.tweets!
-        self.tableView.reloadData()
-    }
-    
+    /*
     // MARK: - Navigation
 
     // In a storyboard-based application, you will often want to do a little preparation before navigation
     override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
-        if segue.identifier == "composeTweetSegue" {
-            var navigationController = segue.destinationViewController as! UINavigationController
-            var tweetComposeViewController = navigationController.topViewController as! TweetComposeViewController
-            tweetComposeViewController.delegate = self
-        } else if segue.identifier == "replyTweetSegue" {
-            var navigationController = segue.destinationViewController as! UINavigationController
-            var tweetComposeViewController = navigationController.topViewController as! TweetComposeViewController
-            tweetComposeViewController.replyFromUser = self.replyFromUser
-            tweetComposeViewController.replyToTweetId = self.replyToTweetId
-            tweetComposeViewController.delegate = self
-        } else if segue.identifier == "profileSegue" {
-            var profileViewController = segue.destinationViewController as! ProfileViewController
-            profileViewController.user = self.tweets![selectedRow!].user!
-            println("selected user: \(self.tweets![selectedRow!].user!.name!)")
-        }
+        // Get the new view controller using segue.destinationViewController.
+        // Pass the selected object to the new view controller.
     }
+    */
+
 }

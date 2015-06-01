@@ -53,6 +53,7 @@ class Tweet: NSObject {
         let cell = tableView.dequeueReusableCellWithIdentifier("TweetCell") as! TweetCell
         cell.tweet = self
         cell.profileImageView.setImageWithURL(NSURL(string: user!.profileImageUrl!), placeholderImage: UIImage(named: "Loading"))
+        cell.profileImageView.tag = atRow
         cell.nameLabel.text = user?.name
         cell.handleLabel.text = "@\(user!.screenname!)"
         cell.timeLabel.text = timeToDisplay()

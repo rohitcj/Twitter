@@ -8,6 +8,8 @@
 
 import UIKit
 
+let userDidSignOutNotification = "userDidSignout"
+
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
@@ -16,12 +18,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -> Bool {
         // Override point for customization after application launch.
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: "userDidSignout", name: userDidSigninNotification, object: nil)
+        NSNotificationCenter.defaultCenter().addObserver(self, selector: "userDidSignout", name: userDidSignOutNotification, object: nil)
         
         if User.currentUser != nil {
             // go to the login screen
             println("Current user detected User \(User.currentUser?.name)")
-            var vc = storyboard.instantiateViewControllerWithIdentifier("TwitterNavigationController") as! UINavigationController
+            AccountsManager.sharedInstance.addAccount(User.currentUser!)
+            var vc = storyboard.instantiateViewControllerWithIdentifier("HomeNavigationController") as! UINavigationController
             window?.rootViewController = vc
         }
         return true

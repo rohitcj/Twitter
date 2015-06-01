@@ -16,22 +16,34 @@ class User: NSObject {
     var name: String?
     var screenname: String?
     var profileImageUrl: String?
+    var profileHeaderImageUrl: String?
     var tagline: String?
+    var location: String?
+    var numFollowing: Int?
+    var numFollowers: Int?
     var dictionary: NSDictionary
+    var accounts: [User]?
     
     init(dictionary: NSDictionary) {
         self.dictionary = dictionary
         name = dictionary["name"] as? String
         screenname = dictionary["screen_name"] as? String
         profileImageUrl = dictionary["profile_image_url"] as? String
+        if dictionary["profile_banner_url"] != nil {
+            profileHeaderImageUrl = dictionary["profile_banner_url"] as? String
+        } else {
+            profileHeaderImageUrl = dictionary["profile_background_image_url"] as? String
+        }
         tagline = dictionary["description"] as? String
+        location = dictionary["location"] as? String
+        numFollowing = dictionary["friends_count"] as? Int
+        numFollowers = dictionary["followers_count"] as? Int
     }
     
     func signout() {
         User.currentUser = nil
         TwitterClient.sharedInstance.requestSerializer.removeAccessToken()
-        NSNotificationCenter.defaultCenter().postNotificationName(userDidSigninNotification, object: nil)
-        
+        NSNotificationCenter.defaultCenter().postNotificationName(userDidSignOutNotification, object: nil)
     }
     
     class var currentUser: User? {

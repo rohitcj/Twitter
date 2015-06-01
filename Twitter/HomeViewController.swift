@@ -28,6 +28,7 @@ class HomeViewController: UIViewController {
             (user: User?, error: NSError?) in
             if user != nil {
                 // perform segue
+                AccountsManager.sharedInstance.addAccount(user!)
                 println("performing segue")
                 self.performSegueWithIdentifier("loginSegue", sender: self)
             } else {
